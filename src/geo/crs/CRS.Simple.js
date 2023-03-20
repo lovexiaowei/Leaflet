@@ -1,7 +1,7 @@
-import {CRS} from './CRS';
-import {LonLat} from '../projection/Projection.LonLat';
-import {toTransformation} from '../../geometry/Transformation';
-import * as Util from '../../core/Util';
+import {CRS} from './CRS.js';
+import {LonLat} from '../projection/Projection.LonLat.js';
+import {toTransformation} from '../../geometry/Transformation.js';
+import * as Util from '../../core/Util.js';
 
 /*
  * @namespace CRS
@@ -13,20 +13,20 @@ import * as Util from '../../core/Util';
  * simple euclidean distance.
  */
 
-export var Simple = Util.extend({}, CRS, {
+export const Simple = Util.extend({}, CRS, {
 	projection: LonLat,
 	transformation: toTransformation(1, 0, -1, 0),
 
-	scale: function (zoom) {
+	scale(zoom) {
 		return Math.pow(2, zoom);
 	},
 
-	zoom: function (scale) {
+	zoom(scale) {
 		return Math.log(scale) / Math.LN2;
 	},
 
-	distance: function (latlng1, latlng2) {
-		var dx = latlng2.lng - latlng1.lng,
+	distance(latlng1, latlng2) {
+		const dx = latlng2.lng - latlng1.lng,
 		    dy = latlng2.lat - latlng1.lat;
 
 		return Math.sqrt(dx * dx + dy * dy);

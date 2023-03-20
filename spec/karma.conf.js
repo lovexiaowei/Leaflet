@@ -1,34 +1,25 @@
-var json = require('@rollup/plugin-json');
-
-const outro = `var oldL = window.L;
-exports.noConflict = function() {
-	window.L = oldL;
-	return this;
-}
-
-// Always export us to window global (see #2364)
-window.L = exports;`;
+const json = require('@rollup/plugin-json');
 
 // Karma configuration
 module.exports = function (config) {
 
 	// 	var libSources = require(__dirname + '/../build/build.js').getFiles();
 
-	var files = [
-		"spec/before.js",
-		"src/Leaflet.js",
-		"spec/after.js",
-		"node_modules/happen/happen.js",
-		"node_modules/prosthetic-hand/dist/prosthetic-hand.js",
-		"spec/suites/SpecHelper.js",
-		"spec/suites/**/*.js",
-		"dist/*.css",
-		{pattern: "dist/images/*.png", included: false, serve: true}
+	const files = [
+		'spec/before.js',
+		'src/LeafletWithGlobals.js',
+		'spec/after.js',
+		'node_modules/ui-event-simulator/ui-event-simulator.js',
+		'node_modules/prosthetic-hand/dist/prosthetic-hand.js',
+		'spec/suites/SpecHelper.js',
+		'spec/suites/**/*.js',
+		'dist/*.css',
+		{pattern: 'dist/images/*.png', included: false, serve: true}
 	];
 
-	var preprocessors = {};
+	const preprocessors = {};
 
-	preprocessors['src/Leaflet.js'] = ['rollup'];
+	preprocessors['src/LeafletWithGlobals.js'] = ['rollup'];
 
 	config.set({
 		// base path, that will be used to resolve files and exclude
@@ -39,39 +30,44 @@ module.exports = function (config) {
 			'karma-mocha',
 			'karma-sinon',
 			'karma-expect',
-			'karma-edge-launcher',
-			'karma-ie-launcher',
 			'karma-chrome-launcher',
-			'karma-safari-launcher',
-			'karma-firefox-launcher'],
+			'karma-safarinative-launcher',
+			'karma-firefox-launcher',
+			'karma-time-stats-reporter'
+		],
 
 		// frameworks to use
 		frameworks: ['mocha', 'sinon', 'expect'],
 
 		// list of files / patterns to load in the browser
-		files: files,
+		files,
 		proxies: {
 			'/base/dist/images/': 'dist/images/'
 		},
 		exclude: [],
 
 		// Rollup the ES6 Leaflet sources into just one file, before tests
-		preprocessors: preprocessors,
+		preprocessors,
 		rollupPreprocessor: {
+			onwarn: () => {}, // silence Rollup warnings
 			plugins: [
 				json()
 			],
 			output: {
 				format: 'umd',
-				name: 'L',
-				outro: outro,
+				name: 'leaflet',
 				freeze: false,
 			},
 		},
 
 		// test results reporter to use
 		// possible values: 'dots', 'progress', 'junit', 'growl', 'coverage'
-		// reporters: ['dots'],
+		reporters: ['progress', 'time-stats'],
+
+		timeStatsReporter: {
+			reportTimeStats: false,
+			longestTestsCount: 10
+		},
 
 		// web server port
 		port: 9876,
@@ -91,8 +87,7 @@ module.exports = function (config) {
 		// - ChromeCanary
 		// - Firefox
 		// - Opera
-		// - Safari (only Mac)
-		// - IE (only Windows)
+		// - SafariNative (only Mac)
 		browsers: ['Chrome1280x1024'],
 
 		customLaunchers: {
@@ -114,16 +109,24 @@ module.exports = function (config) {
 					'dom.w3c_touch_events.enabled': 0
 				}
 			},
-			IE10: {
-				base: 'IE',
-				'x-ua-compatible': 'IE=EmulateIE10'
+			'FirefoxRetina': {
+				base: 'FirefoxHeadless',
+				prefs: {
+					'layout.css.devPixelsPerPx': 2
+				}
 			}
 		},
 
 		concurrency: 1,
 
 		// If browser does not capture in given timeout [ms], kill it
-		captureTimeout: 10000,
+		captureTimeout: 60000,
+
+		// Timeout for the client socket connection [ms].
+		browserSocketTimeout: 30000,
+
+		// Silence console.warn output in the terminal
+		browserConsoleLogOptions: {level: 'error'},
 
 		// Continuous Integration mode
 		// if true, it capture browsers, run tests and exit

@@ -1,10 +1,9 @@
-import {Map} from '../Map';
-import {Handler} from '../../core/Handler';
-import * as Util from '../../core/Util';
-import * as DomUtil from '../../dom/DomUtil';
-import * as DomEvent from '../../dom/DomEvent';
-import {LatLngBounds} from '../../geo/LatLngBounds';
-import {Bounds} from '../../geometry/Bounds';
+import {Map} from '../Map.js';
+import {Handler} from '../../core/Handler.js';
+import * as DomUtil from '../../dom/DomUtil.js';
+import * as DomEvent from '../../dom/DomEvent.js';
+import {LatLngBounds} from '../../geo/LatLngBounds.js';
+import {Bounds} from '../../geometry/Bounds.js';
 
 /*
  * L.Handler.BoxZoom is used to add shift-drag zoom interaction to the map
@@ -20,8 +19,8 @@ Map.mergeOptions({
 	boxZoom: true
 });
 
-export var BoxZoom = Handler.extend({
-	initialize: function (map) {
+export const BoxZoom = Handler.extend({
+	initialize(map) {
 		this._map = map;
 		this._container = map._container;
 		this._pane = map._panes.overlayPane;
@@ -29,37 +28,37 @@ export var BoxZoom = Handler.extend({
 		map.on('unload', this._destroy, this);
 	},
 
-	addHooks: function () {
+	addHooks() {
 		DomEvent.on(this._container, 'mousedown', this._onMouseDown, this);
 	},
 
-	removeHooks: function () {
+	removeHooks() {
 		DomEvent.off(this._container, 'mousedown', this._onMouseDown, this);
 	},
 
-	moved: function () {
+	moved() {
 		return this._moved;
 	},
 
-	_destroy: function () {
-		DomUtil.remove(this._pane);
+	_destroy() {
+		this._pane.remove();
 		delete this._pane;
 	},
 
-	_resetState: function () {
+	_resetState() {
 		this._resetStateTimeout = 0;
 		this._moved = false;
 	},
 
-	_clearDeferredResetState: function () {
+	_clearDeferredResetState() {
 		if (this._resetStateTimeout !== 0) {
 			clearTimeout(this._resetStateTimeout);
 			this._resetStateTimeout = 0;
 		}
 	},
 
-	_onMouseDown: function (e) {
-		if (!e.shiftKey || ((e.which !== 1) && (e.button !== 1))) { return false; }
+	_onMouseDown(e) {
+		if (!e.shiftKey || (e.button !== 0)) { return false; }
 
 		// Clear the deferred resetState if it hasn't executed yet, otherwise it
 		// will interrupt the interaction and orphan a box element in the container.
@@ -79,31 +78,31 @@ export var BoxZoom = Handler.extend({
 		}, this);
 	},
 
-	_onMouseMove: function (e) {
+	_onMouseMove(e) {
 		if (!this._moved) {
 			this._moved = true;
 
 			this._box = DomUtil.create('div', 'leaflet-zoom-box', this._container);
-			DomUtil.addClass(this._container, 'leaflet-crosshair');
+			this._container.classList.add('leaflet-crosshair');
 
 			this._map.fire('boxzoomstart');
 		}
 
 		this._point = this._map.mouseEventToContainerPoint(e);
 
-		var bounds = new Bounds(this._point, this._startPoint),
+		const bounds = new Bounds(this._point, this._startPoint),
 		    size = bounds.getSize();
 
 		DomUtil.setPosition(this._box, bounds.min);
 
-		this._box.style.width  = size.x + 'px';
-		this._box.style.height = size.y + 'px';
+		this._box.style.width  = `${size.x}px`;
+		this._box.style.height = `${size.y}px`;
 	},
 
-	_finish: function () {
+	_finish() {
 		if (this._moved) {
-			DomUtil.remove(this._box);
-			DomUtil.removeClass(this._container, 'leaflet-crosshair');
+			this._box.remove();
+			this._container.classList.remove('leaflet-crosshair');
 		}
 
 		DomUtil.enableTextSelection();
@@ -117,8 +116,8 @@ export var BoxZoom = Handler.extend({
 		}, this);
 	},
 
-	_onMouseUp: function (e) {
-		if ((e.which !== 1) && (e.button !== 1)) { return; }
+	_onMouseUp(e) {
+		if (e.button !== 0) { return; }
 
 		this._finish();
 
@@ -126,9 +125,9 @@ export var BoxZoom = Handler.extend({
 		// Postpone to next JS tick so internal click event handling
 		// still see it as "moved".
 		this._clearDeferredResetState();
-		this._resetStateTimeout = setTimeout(Util.bind(this._resetState, this), 0);
+		this._resetStateTimeout = setTimeout(this._resetState.bind(this), 0);
 
-		var bounds = new LatLngBounds(
+		const bounds = new LatLngBounds(
 		        this._map.containerPointToLatLng(this._startPoint),
 		        this._map.containerPointToLatLng(this._point));
 
@@ -137,8 +136,8 @@ export var BoxZoom = Handler.extend({
 			.fire('boxzoomend', {boxZoomBounds: bounds});
 	},
 
-	_onKeyDown: function (e) {
-		if (e.keyCode === 27) {
+	_onKeyDown(e) {
+		if (e.code === 'Escape') {
 			this._finish();
 			this._clearDeferredResetState();
 			this._resetState();

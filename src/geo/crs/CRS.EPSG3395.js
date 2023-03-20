@@ -1,7 +1,7 @@
-import {Earth} from './CRS.Earth';
-import {Mercator} from '../projection/Projection.Mercator';
-import {toTransformation} from '../../geometry/Transformation';
-import * as Util from '../../core/Util';
+import {Earth} from './CRS.Earth.js';
+import {Mercator} from '../projection/Projection.Mercator.js';
+import {toTransformation} from '../../geometry/Transformation.js';
+import * as Util from '../../core/Util.js';
 
 /*
  * @namespace CRS
@@ -9,12 +9,12 @@ import * as Util from '../../core/Util';
  *
  * Rarely used by some commercial tile providers. Uses Elliptical Mercator projection.
  */
-export var EPSG3395 = Util.extend({}, Earth, {
+export const EPSG3395 = Util.extend({}, Earth, {
 	code: 'EPSG:3395',
 	projection: Mercator,
 
 	transformation: (function () {
-		var scale = 0.5 / (Math.PI * Mercator.R);
+		const scale = 0.5 / (Math.PI * Mercator.R);
 		return toTransformation(scale, 0.5, -scale, 0.5);
 	}())
 });

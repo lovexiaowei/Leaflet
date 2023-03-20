@@ -1,6 +1,6 @@
-import {ImageOverlay} from './ImageOverlay';
-import * as DomUtil from '../dom/DomUtil';
-import * as Util from '../core/Util';
+import {ImageOverlay} from './ImageOverlay.js';
+import * as DomUtil from '../dom/DomUtil.js';
+import * as Util from '../core/Util.js';
 
 /*
  * @class VideoOverlay
@@ -21,13 +21,14 @@ import * as Util from '../core/Util';
  * ```
  */
 
-export var VideoOverlay = ImageOverlay.extend({
+export const VideoOverlay = ImageOverlay.extend({
 
 	// @section
 	// @aka VideoOverlay options
 	options: {
 		// @option autoplay: Boolean = true
 		// Whether the video starts playing automatically when loaded.
+		// On some browsers autoplay will only work with `muted: true`
 		autoplay: true,
 
 		// @option loop: Boolean = true
@@ -41,28 +42,32 @@ export var VideoOverlay = ImageOverlay.extend({
 
 		// @option muted: Boolean = false
 		// Whether the video starts on mute when loaded.
-		muted: false
+		muted: false,
+
+		// @option playsInline: Boolean = true
+		// Mobile browsers will play the video right where it is instead of open it up in fullscreen mode.
+		playsInline: true
 	},
 
-	_initImage: function () {
-		var wasElementSupplied = this._url.tagName === 'VIDEO';
-		var vid = this._image = wasElementSupplied ? this._url : DomUtil.create('video');
+	_initImage() {
+		const wasElementSupplied = this._url.tagName === 'VIDEO';
+		const vid = this._image = wasElementSupplied ? this._url : DomUtil.create('video');
 
-		DomUtil.addClass(vid, 'leaflet-image-layer');
-		if (this._zoomAnimated) { DomUtil.addClass(vid, 'leaflet-zoom-animated'); }
-		if (this.options.className) { DomUtil.addClass(vid, this.options.className); }
+		vid.classList.add('leaflet-image-layer');
+		if (this._zoomAnimated) { vid.classList.add('leaflet-zoom-animated'); }
+		if (this.options.className) { vid.classList.add(...Util.splitWords(this.options.className)); }
 
 		vid.onselectstart = Util.falseFn;
 		vid.onmousemove = Util.falseFn;
 
 		// @event load: Event
 		// Fired when the video has finished loading the first frame
-		vid.onloadeddata = Util.bind(this.fire, this, 'load');
+		vid.onloadeddata = this.fire.bind(this, 'load');
 
 		if (wasElementSupplied) {
-			var sourceElements = vid.getElementsByTagName('source');
-			var sources = [];
-			for (var j = 0; j < sourceElements.length; j++) {
+			const sourceElements = vid.getElementsByTagName('source');
+			const sources = [];
+			for (let j = 0; j < sourceElements.length; j++) {
 				sources.push(sourceElements[j].src);
 			}
 
@@ -70,16 +75,17 @@ export var VideoOverlay = ImageOverlay.extend({
 			return;
 		}
 
-		if (!Util.isArray(this._url)) { this._url = [this._url]; }
+		if (!Array.isArray(this._url)) { this._url = [this._url]; }
 
-		if (!this.options.keepAspectRatio && Object.prototype.hasOwnProperty.call(vid.style, 'objectFit')) {
+		if (!this.options.keepAspectRatio && Object.hasOwn(vid.style, 'objectFit')) {
 			vid.style['objectFit'] = 'fill';
 		}
 		vid.autoplay = !!this.options.autoplay;
 		vid.loop = !!this.options.loop;
 		vid.muted = !!this.options.muted;
-		for (var i = 0; i < this._url.length; i++) {
-			var source = DomUtil.create('source');
+		vid.playsInline = !!this.options.playsInline;
+		for (let i = 0; i < this._url.length; i++) {
+			const source = DomUtil.create('source');
 			source.src = this._url[i];
 			vid.appendChild(source);
 		}

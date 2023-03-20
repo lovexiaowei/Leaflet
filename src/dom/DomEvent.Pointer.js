@@ -1,35 +1,30 @@
-import * as DomEvent from './DomEvent';
-import * as Browser from '../core/Browser';
+import {falseFn} from '../core/Util.js';
 
-/*
- * Extends L.DomEvent to provide touch support for Internet Explorer and Windows-based devices.
- */
-
-var POINTER_DOWN =   Browser.msPointer ? 'MSPointerDown'   : 'pointerdown';
-var POINTER_MOVE =   Browser.msPointer ? 'MSPointerMove'   : 'pointermove';
-var POINTER_UP =     Browser.msPointer ? 'MSPointerUp'     : 'pointerup';
-var POINTER_CANCEL = Browser.msPointer ? 'MSPointerCancel' : 'pointercancel';
-var pEvent = {
-	touchstart  : POINTER_DOWN,
-	touchmove   : POINTER_MOVE,
-	touchend    : POINTER_UP,
-	touchcancel : POINTER_CANCEL
+const pEvent = {
+	touchstart  : 'pointerdown',
+	touchmove   : 'pointermove',
+	touchend    : 'pointerup',
+	touchcancel : 'pointercancel'
 };
-var handle = {
+const handle = {
 	touchstart  : _onPointerStart,
 	touchmove   : _handlePointer,
 	touchend    : _handlePointer,
 	touchcancel : _handlePointer
 };
-var _pointers = {};
-var _pointerDocListener = false;
+const _pointers = {};
+let _pointerDocListener = false;
 
-// Provides a touch events wrapper for (ms)pointer events.
-// ref http://www.w3.org/TR/pointerevents/ https://www.w3.org/Bugs/Public/show_bug.cgi?id=22890
+// Provides a touch events wrapper for pointer events.
+// ref https://www.w3.org/TR/pointerevents/
 
 export function addPointerListener(obj, type, handler) {
 	if (type === 'touchstart') {
 		_addPointerDocListener();
+	}
+	if (!handle[type]) {
+		console.warn('wrong event specified:', type);
+		return falseFn;
 	}
 	handler = handle[type].bind(this, handler);
 	obj.addEventListener(pEvent[type], handler, false);
@@ -37,6 +32,10 @@ export function addPointerListener(obj, type, handler) {
 }
 
 export function removePointerListener(obj, type, handler) {
+	if (!pEvent[type]) {
+		console.warn('wrong event specified:', type);
+		return;
+	}
 	obj.removeEventListener(pEvent[type], handler, false);
 }
 
@@ -58,20 +57,20 @@ function _addPointerDocListener() {
 	// need to keep track of what pointers and how many are active to provide e.touches emulation
 	if (!_pointerDocListener) {
 		// we listen document as any drags that end by moving the touch off the screen get fired there
-		document.addEventListener(POINTER_DOWN, _globalPointerDown, true);
-		document.addEventListener(POINTER_MOVE, _globalPointerMove, true);
-		document.addEventListener(POINTER_UP, _globalPointerUp, true);
-		document.addEventListener(POINTER_CANCEL, _globalPointerUp, true);
+		document.addEventListener('pointerdown', _globalPointerDown, true);
+		document.addEventListener('pointermove', _globalPointerMove, true);
+		document.addEventListener('pointerup', _globalPointerUp, true);
+		document.addEventListener('pointercancel', _globalPointerUp, true);
 
 		_pointerDocListener = true;
 	}
 }
 
 function _handlePointer(handler, e) {
-	if (e.pointerType === (e.MSPOINTER_TYPE_MOUSE || 'mouse')) { return; }
+	if (e.pointerType === 'mouse') { return; }
 
 	e.touches = [];
-	for (var i in _pointers) {
+	for (const i in _pointers) {
 		e.touches.push(_pointers[i]);
 	}
 	e.changedTouches = [e];
@@ -80,9 +79,5 @@ function _handlePointer(handler, e) {
 }
 
 function _onPointerStart(handler, e) {
-	// IE10 specific: MsTouch needs preventDefault. See #2000
-	if (e.MSPOINTER_TYPE_TOUCH && e.pointerType === e.MSPOINTER_TYPE_TOUCH) {
-		DomEvent.preventDefault(e);
-	}
 	_handlePointer(handler, e);
 }
