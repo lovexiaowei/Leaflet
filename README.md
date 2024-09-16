@@ -12,7 +12,7 @@ Ukrainians are recommending the [Come Back Alive](https://savelife.in.ua/en/) ch
 
 If an appeal to humanity doesn't work for you, I'll appeal to your egoism: the future of Ukrainian citizens is the future of Leaflet.
 
-It is chilling to see Leaflet being used for [documenting Russia's war crimes](https://ukraine.bellingcat.com/), [factual reporting of the war](https://liveuamap.com/) and for coordination of humanitarian efforts [in Romania](https://refugees.ro/) and [in Poland](https://dopomoha.pl/). We commend these uses of Leaflet.
+It is chilling to see Leaflet being used for [documenting Russia's war crimes](https://ukraine.bellingcat.com/), [factual reporting of the war](https://liveuamap.com/) and for coordination of humanitarian efforts across Europe. We commend these uses of Leaflet.
 
 If you support the actions of the Russian government (even after reading all this), do everyone else a favour and [carry some seeds in your pocket](https://www.theguardian.com/world/video/2022/feb/25/ukrainian-woman-sunflower-seeds-russian-soldiers-video).
 
@@ -28,7 +28,7 @@ Weighing just about 42 KB of gzipped JS plus 4 KB of gzipped CSS code, it has al
 
 Leaflet is designed with *simplicity*, *performance* and *usability* in mind.
 It works efficiently across all major desktop and mobile platforms out of the box,
-taking advantage of HTML5 and CSS3 on modern browsers while being accessible on older ones too.
+taking advantage of modern browser features while being accessible on older ones too.
 It can be extended with a huge amount of [plugins][],
 has a beautiful, easy to use and [well-documented][] API
 and a simple, readable [source code][] that is a joy to [contribute][] to.

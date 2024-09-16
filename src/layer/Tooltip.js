@@ -394,7 +394,7 @@ Layer.include({
 	},
 
 	_addFocusListenersOnLayer(layer) {
-		const el = layer.getElement();
+		const el = typeof layer.getElement === 'function' && layer.getElement();
 		if (el) {
 			DomEvent.on(el, 'focus', function () {
 				this._tooltip._source = layer;
@@ -405,7 +405,7 @@ Layer.include({
 	},
 
 	_setAriaDescribedByOnLayer(layer) {
-		const el = layer.getElement();
+		const el = typeof layer.getElement === 'function' && layer.getElement();
 		if (el) {
 			el.setAttribute('aria-describedby', this._tooltip._container.id);
 		}
@@ -413,9 +413,22 @@ Layer.include({
 
 
 	_openTooltip(e) {
-		if (!this._tooltip || !this._map || (this._map.dragging && this._map.dragging.moving())) {
+		if (!this._tooltip || !this._map) {
 			return;
 		}
+
+		// If the map is moving, we will show the tooltip after it's done.
+		if (this._map.dragging && this._map.dragging.moving()) {
+			if (e.type === 'add' && !this._moveEndOpensTooltip) {
+				this._moveEndOpensTooltip = true;
+				this._map.once('moveend', () => {
+					this._moveEndOpensTooltip = false;
+					this._openTooltip(e);
+				});
+			}
+			return;
+		}
+
 		this._tooltip._source = e.layer || e.target;
 
 		this.openTooltip(this._tooltip.options.sticky ? e.latlng : undefined);
